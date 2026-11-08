@@ -12,6 +12,7 @@ end $$;
 grant usage on schema public, auth to anon, authenticated, service_role;
 alter default privileges in schema public grant all on tables to anon, authenticated, service_role;
 alter default privileges in schema public grant all on sequences to anon, authenticated, service_role;
+alter default privileges in schema public grant all on functions to anon, authenticated, service_role;   -- Supabase lo hace así
 insert into auth.users (id, email) values
   ('00000000-0000-0000-0000-000000000001', 'admin@coop.test'),
   ('00000000-0000-0000-0000-000000000002', 'lector@coop.test'),

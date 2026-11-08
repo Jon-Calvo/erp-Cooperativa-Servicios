@@ -12,6 +12,7 @@ ERP interno de una cooperativa de consultoría en Seguridad e Higiene. Registra 
 | `docs/` | Documento de diseño consolidado (reglas de negocio y decisiones). |
 | `prototipo/` | Prototipo HTML interactivo con la lógica de negocio de referencia. |
 | `db/migraciones/` | Scripts SQL numerados, para aplicar **en orden** en el SQL Editor de Supabase. |
+| `db/opcionales/` | Scripts que no son migraciones (por ejemplo, programar las tareas automáticas). |
 | `db/tests/` | Pruebas automáticas contra un Postgres local (opcionales). |
 
 ## Cómo aplicar la base de datos en Supabase
@@ -24,7 +25,8 @@ ERP interno de una cooperativa de consultoría en Seguridad e Higiene. Registra 
    select public.inicializar_admin('tu@mail.com');
    ```
    Eso lo deja como *Director* con acceso total. Solo funciona una vez.
-5. Para saber qué está aplicado: `select * from public.migraciones order by version;`
+5. Opcional: `db/opcionales/programar_tareas.sql` programa el inicio automático de OT y la generación automática de SM (requiere activar la extensión `pg_cron`).
+6. Para saber qué está aplicado: `select * from public.migraciones order by version;`
 
 ## Reglas para versionar la base
 

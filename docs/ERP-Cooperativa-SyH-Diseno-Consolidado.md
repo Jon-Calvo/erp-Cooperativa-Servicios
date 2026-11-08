@@ -654,3 +654,24 @@ Restricciones:
 7. **Después:** Bancos y Conciliación (extractos, e-cheq), Contabilidad (asientos, libros de IVA), PDF de presupuestos.
 
 Cada fase se prueba antes de entregarse contra un Postgres local con los mismos escenarios del prototipo (cobros, ajustes, reversiones, monotributo).
+
+## 19. Migración 0003 — Comercial y Operaciones (en la base de datos)
+
+**Modelo.** `presupuesto` (una fila por versión: mismo código, versión aparte), `presupuesto_linea`, `presupuesto_seguimiento`, `ot`, `ot_equipo`, `sm`, `sm_precio`; vistas `presupuesto_resumen` (totales, vence el, próximo seguimiento) y `sm_resumen`.
+
+**Reglas que hace cumplir la base (no el frontend).**
+- Los estados del presupuesto, de sus líneas y de la OT **no se cambian con un update**: solo con las funciones `enviar_presupuesto`, `aprobar_linea`, `rechazar_linea`, `reabrir_linea`, `nueva_version_presupuesto`, `cambiar_estado_ot`, `generar_ot_sm`.
+- Un presupuesto enviado no se edita (solo sus comentarios): se crea una nueva versión.
+- Aprobar una línea crea la OT, pasa el cliente prospecto a activo y, si todas las líneas tienen decisión, el presupuesto queda procesado. Reabrir una línea rechazada lo devuelve a enviado (configurable).
+- Rechazar exige motivo (lista editable). El descuento por línea solo se admite si está habilitado en Organización.
+- Un asociado dado de baja no puede ser emisor, responsable ni integrar el equipo.
+- OT sin presupuesto: motivo obligatorio y queda registrado quién la autorizó.
+- OT cerrada: no se modifica; reabrirla exige permiso de administración y motivo, y queda auditada.
+- Precio del SM: solo hacia adelante (no se puede ajustar un período ya generado); una sola OT activa por SM y período; si se cancela, se puede regenerar a mano (la generación automática nunca la regenera).
+
+**Supuestos tomados que conviene confirmar.**
+1. Una *nueva versión* se crea solo desde un presupuesto **enviado** y **sin líneas aprobadas** (si ya hay OT, no se versiona).
+2. Estados de OT: pendiente → en ejecución → finalizada → cerrada, más cancelada. Se puede reanudar una finalizada (con motivo) y reabrir una cerrada (con motivo y permiso de administración en Operaciones).
+3. El **anticipo** se guarda en la OT (`requiere_anticipo`, monto opcional); la **factura en borrador** del anticipo y la de cada OT de SM se generan cuando exista Facturación (migración 0005).
+4. Los presupuestos se emiten en pesos; el precio de la línea sale del precio ARS vigente del servicio.
+5. La generación automática de SM crea la OT del mes desde el día de generación y no espera a la fecha de fin (que solo genera una alerta).
