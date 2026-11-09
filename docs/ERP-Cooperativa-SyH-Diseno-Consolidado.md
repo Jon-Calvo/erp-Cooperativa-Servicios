@@ -675,3 +675,26 @@ Cada fase se prueba antes de entregarse contra un Postgres local con los mismos 
 3. El **anticipo** se guarda en la OT (`requiere_anticipo`, monto opcional); la **factura en borrador** del anticipo y la de cada OT de SM se generan cuando exista Facturación (migración 0005).
 4. Los presupuestos se emiten en pesos; el precio de la línea sale del precio ARS vigente del servicio.
 5. La generación automática de SM crea la OT del mes desde el día de generación y no espera a la fecha de fin (que solo genera una alerta).
+
+## 20. Migración 0004 — Costos y gastos (en la base de datos)
+
+**Modelo.** `gasto` + `gasto_item`, `factura_proveedor` + `factura_proveedor_pago`, `subcontrato` + `subcontrato_pago`, `movimiento_cc_asociado` (libro), `liquidacion`. Vistas: `gasto_resumen` (total, sin factura, costo para margen, estado de pago), `factura_proveedor_resumen` (pagado, saldo, imputado, estado), `ot_costos`, `subcontrato_resumen` (real y saldo), `saldo_cc_asociado`.
+
+**Reglas que hace cumplir la base.**
+- Gastos, pagos, liquidaciones y movimientos de cuenta corriente **solo se crean por funciones**; no hay altas, cambios ni bajas directas. Un gasto no se edita (salvo su observación): se revierte con motivo y se vuelve a cargar.
+- Cuenta corriente de asociados: **libro de solo inserción**; lo revertido se contrarresta con un movimiento inverso que apunta al original. Cada asociado vinculado a un usuario ve su propia cuenta.
+- Pagó un asociado → la Cooperativa le debe el total; el gasto imputado a otro asociado le resta a ese asociado; si pagó y asume el mismo, no hay movimiento.
+- Conceptos con proveedor y número de factura generan (o se vinculan a) la factura de proveedor; si pagó un asociado, esa factura queda pagada por él. Una factura vinculada a gastos de más de un gasto marca alerta si queda imputada de más.
+- Revertir un gasto contrarresta su cuenta corriente y anula la factura que haya generado si ya nadie la usa. No se puede si la Cooperativa ya pagó (primero se revierte el pago) ni si la OT está cerrada o cancelada. Una OT con gastos vigentes no se cancela.
+- Un asociado de baja no puede pagar, asumir ni emitir facturas nuevas.
+
+**Permisos.** Operar (nivel 2) en Costos: cargar gastos, revertir gastos, registrar pagos y liquidaciones. Administrar (nivel 3): aprobar gastos y **revertir pagos y liquidaciones**.
+
+**Supuestos tomados que conviene confirmar.**
+1. **El costo que descuenta del margen es el neto** (sin IVA cuando el IVA está discriminado, porque genera crédito fiscal); el total con IVA se muestra como "gasto total" y es lo que se le debe al asociado que pagó.
+2. Un gasto **a cargo de un asociado** nace con "afecta margen = No" (el costo es de él, no de la OT); se puede cambiar concepto por concepto.
+3. La factura de proveedor generada desde un gasto nace **sin vencimiento**; se completa después.
+4. Un gasto debe estar **aprobado antes de pagarse** (si la aprobación está activa).
+5. El pago de un **subcontrato** se registra sin factura y como pagado en el acto; el costo real y el saldo se calculan de los gastos vigentes.
+6. Las facturas de un asociado a la Cooperativa se pagan **solo con una liquidación** (no con el pago común de facturas).
+7. La recalculación automática de la distribución cuando cambian los costos (alta, aprobación, reversión) se activa en la migración 0005, que reemplaza el gancho `costos_cambiaron`.
