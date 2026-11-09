@@ -698,3 +698,30 @@ Cada fase se prueba antes de entregarse contra un Postgres local con los mismos 
 5. El pago de un **subcontrato** se registra sin factura y como pagado en el acto; el costo real y el saldo se calculan de los gastos vigentes.
 6. Las facturas de un asociado a la Cooperativa se pagan **solo con una liquidación** (no con el pago común de facturas).
 7. La recalculación automática de la distribución cuando cambian los costos (alta, aprobación, reversión) se activa en la migración 0005, que reemplaza el gancho `costos_cambiaron`.
+
+## 21. Migración 0005 — Facturación y Cobranza (en la base de datos)
+
+**Alcance.** La Distribución (reglas, reparto, ajustes por costos, reversión proporcional de notas de crédito, regalías) se activa en la migración **0006**. La 0005 deja listos los datos de cada cobro por OT y tres ganchos (`hook_cobranza_registrada`, `hook_cobranza_revertida`, `hook_credito_resuelto`) que la 0006 reemplaza.
+
+**Modelo.** `factura` (facturas, NC y ND en una sola tabla, con su `clase`) + `factura_linea` (una línea por OT), `cobranza` + `cobranza_aplicacion` + `cobranza_ot`, `movimiento_cc_cliente` (libro), `devolucion_cliente`, `factura_credito_resuelto` (+ por OT). Vistas: `factura_total`, `factura_resumen` (estado, vigente, cobrado, saldo, crédito a resolver), `ot_facturacion`, `ot_cobranza`, `saldo_cc_cliente`.
+
+**Reglas que hace cumplir la base.**
+- El sistema **no emite**: registra lo emitido en ARCA. Un comprobante fiscal emitido exige tipo, punto de venta, número y CAE; es único por emisor + tipo + punto de venta + número. Una factura interna (regalías) se emite sin CAE.
+- El tipo de comprobante tiene que corresponder a la clase (factura / nota de crédito / nota de débito). Punto de venta y número se guardan con ceros a la izquierda.
+- Un comprobante emitido no se modifica (solo su observación) ni se borra: se corrige con una nota de crédito. Un borrador sí se edita y se borra.
+- Una OT con comprobantes emitidos no se cancela; al cancelar una OT se descartan sus borradores.
+- Una nota de crédito o de débito apunta a una factura emitida del mismo cliente y emisor. **La nota de crédito no puede superar lo facturado de cada OT.** La nota de crédito baja lo vigente aunque la factura esté cobrada y la nota de débito lo sube.
+- Estados de factura: borrador → emitida → parcial → cobrada; acreditada (la nota de crédito la cubre toda) y crédito a resolver (se cobró de más).
+- **Cobranza:** `importe` es el efectivo recibido; las aplicaciones a facturas incluyen lo cancelado con retenciones; lo que sobra va a la cuenta corriente del cliente. La retención de IVA no puede superar el IVA aplicado y las de Ganancias/IIBB/otras no pueden superar el neto aplicado.
+- El cobro de cada factura se **reparte entre sus OT** proporcionalmente a su composición vigente (líneas + ND − NC) y queda fijo (`cobranza_ot`): es la base de la Distribución.
+- **Saldo a favor:** se aplica a facturas nuevas como una cobranza sin efectivo; no puede superar el saldo del cliente.
+- **Crédito de una nota de crédito:** se resuelve dejándolo como saldo a favor o devolviéndolo (medio, cuenta del cliente; si lo devolvió un asociado, se le acredita en su cuenta corriente).
+- **Revertir una cobranza** (administrar, con motivo): la factura recupera el saldo y se revierte el sobrante. No se puede si la factura tiene notas de crédito o crédito resuelto, ni si el sobrante ya se usó.
+- **Borradores automáticos:** al crearse una OT con anticipo o una OT de SM se crea su factura en borrador (monto del anticipo o neto de la OT; emisor del presupuesto o la Cooperativa; IVA sugerido según la condición del emisor; vencimiento según la condición de pago del cliente).
+
+**Supuestos tomados que conviene confirmar.**
+1. El anticipo sin monto indicado se factura por el **neto completo** de la OT (se puede corregir en el borrador).
+2. Las facturas de **SM las emite la Cooperativa** (el SM no guarda emisor); se puede cambiar en el borrador.
+3. Las cobranzas se aplican solo a **facturas**; las notas de débito se cobran a través de su factura.
+4. Por ahora **no se revierten** notas de crédito ni la resolución de un crédito (devolución o saldo a favor).
+5. El permiso para revertir cobranzas es **Administrar** en Cobranza.
