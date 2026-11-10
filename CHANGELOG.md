@@ -1,5 +1,8 @@
 # Historial de cambios
 
+## db-0006 · Distribución
+Reglas de reparto por OT, versionadas (porcentaje, importe fijo y residual; la Cooperativa puede participar; cada asociado como socio o profesional). Distribución de cada cobranza por OT (cada cobro parcial genera su instancia) en modo proporcional o costos primero; regla distinta solo para un cobro o como nueva versión, con motivo. Efectivo retenido por el asociado que cobró, retenciones absorbidas por el emisor, IVA y tributos cobrados por otro asociado. Ajuste automático cuando cambian los costos (alta, aprobación o reversión de un gasto), reversión proporcional cuando se resuelve una nota de crédito, reversión de cobranzas con su reparto, regalías en un solo paso y distribución automática opcional. Validación del monto de anticipo (neto, hasta el neto de la OT). Vistas de pendientes de distribuir y resumen financiero por OT.
+
 ## db-0005 · Facturación y cobranza
 Facturas, notas de crédito y de débito (el sistema solo registra lo emitido en ARCA; unicidad por emisor, tipo, punto de venta y número; facturas internas sin CAE). Estados calculados: borrador, emitida, parcial, cobrada, acreditada, crédito a resolver. Borradores automáticos por anticipo y por OT de SM. Cobranzas con retenciones separadas (IVA / Ganancias-IIBB-otras), aplicación a facturas, sobrante a la cuenta corriente del cliente, aplicación de saldo a favor, reparto del cobro entre las OT de cada factura, reversión de cobranzas. Resolución del crédito de una nota de crédito (saldo a favor o devolución). Vistas de facturación y cobranza por OT. Deja ganchos (`hook_*`) para la Distribución.
 
@@ -16,4 +19,4 @@ Condiciones y medios de pago, categorías de gasto, tipos de cambio (diario y pr
 Registro de migraciones, numeración de códigos (`PREFIJO-AAAA-NNNNN` y `PREFIJO-NNNNN`), listas editables, Organización con historial de condición ante IVA, usuarios, puestos y permisos (Puesto × Módulo × Nivel con excepciones por usuario), auditoría de cambios y utilidades para preparar tablas (RLS, auditoría, fecha de modificación).
 
 ## Próximos
-0006 Distribución ·  Costos y gastos  · Frontend · Bancos y Conciliación · Contabilidad.
+0007 Monotributo, calendario y reportes ·  Costos y gastos  · Frontend · Bancos y Conciliación · Contabilidad.

@@ -720,8 +720,31 @@ Cada fase se prueba antes de entregarse contra un Postgres local con los mismos 
 - **Borradores automáticos:** al crearse una OT con anticipo o una OT de SM se crea su factura en borrador (monto del anticipo o neto de la OT; emisor del presupuesto o la Cooperativa; IVA sugerido según la condición del emisor; vencimiento según la condición de pago del cliente).
 
 **Supuestos tomados que conviene confirmar.**
-1. El anticipo sin monto indicado se factura por el **neto completo** de la OT (se puede corregir en el borrador).
+1. **El monto del anticipo se indica al aprobar la línea del presupuesto o al crear la OT** (no hace falta pasar por el borrador). Es un monto **neto, sin IVA**, y no puede superar el neto de la OT. Si no se indica, el borrador sale por el neto completo.
 2. Las facturas de **SM las emite la Cooperativa** (el SM no guarda emisor); se puede cambiar en el borrador.
 3. Las cobranzas se aplican solo a **facturas**; las notas de débito se cobran a través de su factura.
 4. Por ahora **no se revierten** notas de crédito ni la resolución de un crédito (devolución o saldo a favor).
 5. El permiso para revertir cobranzas es **Administrar** en Cobranza.
+
+## 22. Migración 0006 — Distribución (en la base de datos)
+
+**Modelo.** `regla_distribucion` + `regla_distribucion_parte` (versionadas: solo se agregan), `distribucion` + `distribucion_parte` (una instancia por cobranza y OT, más los ajustes). Vistas: `regla_distribucion_vigente`, `cobranza_pendiente_distribuir`, `ot_resumen_financiero` (neto, facturado, cobrado, gastos, margen estimado, distribuido).
+
+**Reglas.**
+- **Participaciones:** porcentaje (del resultado), importe fijo (se prorratea por lo cobrado de la OT, así suma el total al terminar) y residual (lo que queda). Debe cerrar 100% o tener un residual; un solo residual; con fijos hace falta residual. La Cooperativa puede participar (sin cuenta corriente). Cada asociado participa **como socio o profesional** (se precarga según su vínculo; "ambos" obliga a elegir). Un asociado de baja no entra en reglas nuevas.
+- **Cálculo por cobranza y OT:** base = neto cobrado sin IVA (las retenciones cancelan saldo, así que están incluidas); costos = gastos **aprobados, no anulados y con "afecta margen"**, por su neto. *Proporcional:* se descuenta la proporción de costos sobre el neto de la OT. *Costos primero:* los primeros cobros absorben los costos hasta cubrirlos. El modo no se cambia cuando la OT ya tiene distribuciones.
+- **Cambiar la regla en un cobro:** el cambio vale solo para ese cobro o como nueva versión, con motivo obligatorio. Si la OT no tenía regla, el primer cobro crea la v1. Una OT cerrada no admite cambios de regla.
+- **Cuenta corriente de asociados por cobranza:** el asociado que recibió el efectivo debe rendirlo (neto de retenciones, más el sobrante); el emisor asociado absorbe las retenciones de Ganancias/IIBB/otras; el IVA y los otros tributos cobrados en efectivo son del emisor: quien los recibe sin haber emitido se los debe a él (si emite y cobra el mismo, no los rinde). La retención de IVA no se rinde.
+- **Ajuste automático:** cada vez que cambian los costos (alta, aprobación o reversión de un gasto) se recalcula lo repartido y se genera un ajuste que actualiza las cuentas. En *costos primero* no se descuenta dos veces.
+- **Nota de crédito:** al resolver su crédito (saldo a favor o devolución) se revierte proporcionalmente el reparto con un ajuste.
+- **Revertir una cobranza:** se anulan sus distribuciones, se contrarrestan los movimientos de cuenta corriente (del reparto y de la cobranza) y se recalculan los ajustes.
+- **Regalía:** un solo paso genera la factura interna, la cobranza y la distribución; exige regla previa.
+- **Distribución automática:** opción de Organización (apagada por defecto) para distribuir sola, con la regla vigente, al registrar la cobranza; si alguna OT no tiene regla, la cobranza queda pendiente.
+- **Permisos:** distribuir con la regla vigente = Operar; definir o cambiar reglas (incluso en un cobro) = Administrar en Distribución.
+
+**Supuestos tomados que conviene confirmar.**
+1. El **importe fijo se prorratea** por lo cobrado de la OT (no se paga entero en el primer cobro).
+2. Los ajustes posteriores (por costos o por notas de crédito) usan la **regla vigente** en ese momento, aunque algún cobro se haya repartido con otra versión o con una variante.
+3. En *costos primero*, una nota de crédito devuelve el neto completo cuando los costos ya estaban cubiertos.
+4. La distribución automática al cobrar viene **apagada**: cada cobro se distribuye con una confirmación explícita (como en el prototipo).
+5. La Cooperativa como participante no genera movimientos (no tiene cuenta corriente); su parte queda registrada en la distribución.
