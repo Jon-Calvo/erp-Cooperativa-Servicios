@@ -1,5 +1,8 @@
 # Historial de cambios
 
+## db-0007 · Monotributo, calendario y reportes
+Control de monotributo: período anual o semestral desde el aniversario de cada asociado, límites versionados, acumulado (facturas emitidas con sus ND y NC, facturas a la Cooperativa, transferencias sin factura, ingresos externos y ajustes, sin contar dos veces un mismo pago), semáforo (sin límite, verde, amarillo, rojo, excedido), proyección al elegir el emisor de una factura y detalle. Calendario unificado con eventos derivados del estado de cada entidad (presupuestos, OT, SM, facturas, cobranzas, costos, matrículas, monotributo) y recordatorios manuales privados o compartidos. Reportes: facturas por cobrar y por pagar con tramos de vencimiento, libro de IVA ventas (por alícuota) y libro de IVA compras.
+
 ## db-0006 · Distribución
 Reglas de reparto por OT, versionadas (porcentaje, importe fijo y residual; la Cooperativa puede participar; cada asociado como socio o profesional). Distribución de cada cobranza por OT (cada cobro parcial genera su instancia) en modo proporcional o costos primero; regla distinta solo para un cobro o como nueva versión, con motivo. Efectivo retenido por el asociado que cobró, retenciones absorbidas por el emisor, IVA y tributos cobrados por otro asociado. Ajuste automático cuando cambian los costos (alta, aprobación o reversión de un gasto), reversión proporcional cuando se resuelve una nota de crédito, reversión de cobranzas con su reparto, regalías en un solo paso y distribución automática opcional. Validación del monto de anticipo (neto, hasta el neto de la OT). Vistas de pendientes de distribuir y resumen financiero por OT.
 
@@ -19,4 +22,4 @@ Condiciones y medios de pago, categorías de gasto, tipos de cambio (diario y pr
 Registro de migraciones, numeración de códigos (`PREFIJO-AAAA-NNNNN` y `PREFIJO-NNNNN`), listas editables, Organización con historial de condición ante IVA, usuarios, puestos y permisos (Puesto × Módulo × Nivel con excepciones por usuario), auditoría de cambios y utilidades para preparar tablas (RLS, auditoría, fecha de modificación).
 
 ## Próximos
-0007 Monotributo, calendario y reportes ·  Costos y gastos  · Frontend · Bancos y Conciliación · Contabilidad.
+Frontend ·  Costos y gastos  · Frontend · Bancos y Conciliación · Contabilidad.

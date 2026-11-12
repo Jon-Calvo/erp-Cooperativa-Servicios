@@ -748,3 +748,21 @@ Cada fase se prueba antes de entregarse contra un Postgres local con los mismos 
 3. En *costos primero*, una nota de crédito devuelve el neto completo cuando los costos ya estaban cubiertos.
 4. La distribución automática al cobrar viene **apagada**: cada cobro se distribuye con una confirmación explícita (como en el prototipo).
 5. La Cooperativa como participante no genera movimientos (no tiene cuenta corriente); su parte queda registrada en la distribución.
+
+## 23. Migración 0007 — Monotributo, calendario y reportes (en la base de datos)
+
+**Monotributo.** Tablas `monotributo_limite` (versionada), `monotributo_ingreso_externo` (se anula con motivo) y `monotributo_ajuste`. Funciones: `monotributo_periodo`, `monotributo_resumen`, `monotributo_detalle`, `monotributo_estado` (todos los monotributistas) y `monotributo_proyeccion` (cómo quedaría cada asociado si se le suma un monto: se usa al elegir el emisor de una factura y sugiere alternativas).
+- **Período:** anual o semestral desde el aniversario propio de cada asociado; sin aniversario, año calendario. Un aniversario el 29, 30 o 31 se toma como día 28.
+- **Qué cuenta:** facturas emitidas por el asociado (por su total vigente, con ND y NC) + facturas que le hizo a la Cooperativa + transferencias de la Cooperativa **sin factura** + ingresos externos + ajustes. Un pago aplicado a una factura suya no se cuenta dos veces (cuenta la factura). Lo que el asociado le paga a la Cooperativa no cuenta.
+- **Semáforo:** verde, amarillo (desde el umbral de aviso de Organización, 80%), rojo (umbral crítico, 95%) y excedido (100%); además "sin límite" y "no aplica" (no es monotributista).
+- **Visibilidad:** cada asociado vinculado a un usuario ve lo suyo; el resto exige permiso de Monotributo. Quien factura (Operar en Facturación) puede consultar la proyección.
+
+**Calendario.** La vista `calendario_eventos` deriva los eventos del estado de cada entidad (nada se guarda): seguimiento y vencimiento de presupuestos; inicio de OT; OT finalizada sin facturar completo; fin y generación mensual de SM; borradores por emitir; vencimiento de facturas y de facturas de proveedor; crédito a resolver; acreditación de fondos; cobranzas por distribuir; gastos por aprobar; vencimiento de matrículas; alertas y cierre de período de monotributo. Cada evento indica si está **cumplido** (para el interruptor "Ver cumplidos"), su módulo y su prioridad. Respeta los permisos: cada usuario ve solo los eventos de lo que puede leer. Los **recordatorios manuales** son lo único que se guarda: privados o compartidos; cada uno administra los suyos.
+
+**Reportes.** `facturas_por_cobrar` y `facturas_proveedor_por_pagar` (con días vencidos y tramo: a vencer, 1–30, 31–60, más de 60), `libro_iva_ventas` (comprobantes fiscales **de la Cooperativa**, una fila por alícuota; las notas de crédito restan) y `libro_iva_compras` (facturas de proveedores y de asociados, sin las anuladas). `ot_resumen_financiero` (0006) cubre el margen por OT.
+
+**Supuestos tomados que conviene confirmar.**
+1. El monotributo cuenta el **total vigente de cada factura** (con IVA, ND y NC) en la **fecha de la factura**.
+2. El límite se carga **por el período de control** del asociado (si el control es semestral, el monto que corresponde a ese semestre).
+3. El libro de IVA ventas incluye solo comprobantes fiscales de la Cooperativa (no los de asociados ni los internos); el de compras no incluye gastos con IVA discriminado que no tengan factura de proveedor.
+4. Los eventos del calendario se muestran todos; el frontend filtra por fechas y por "cumplidos".
