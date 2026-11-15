@@ -766,3 +766,38 @@ Cada fase se prueba antes de entregarse contra un Postgres local con los mismos 
 2. El límite se carga **por el período de control** del asociado (si el control es semestral, el monto que corresponde a ese semestre).
 3. El libro de IVA ventas incluye solo comprobantes fiscales de la Cooperativa (no los de asociados ni los internos); el de compras no incluye gastos con IVA discriminado que no tengan factura de proveedor.
 4. Los eventos del calendario se muestran todos; el frontend filtra por fechas y por "cumplidos".
+
+## 24. Migración 0008 y diseño del frontend: KPIs y apariencia
+
+**Apariencia.**
+- **Color de la aplicación:** lo define la organización (Configuración → Apariencia) y es **azul por defecto**. Opciones: azul, verde, violeta, naranja, grafito o un **color personalizado** (código hexadecimal). El frontend deriva de ese color el fondo suave, el texto y el aro de foco, y una variante más clara para el modo oscuro. Se guarda en `organizacion.tema_color` y `organizacion.tema_color_personalizado`; lo lee cualquier usuario activo y solo la administración lo cambia (queda auditado).
+- **Modo claro, sistema u oscuro:** lo elige cada usuario con un selector de **tres íconos** (sol, engranaje y luna), sin texto, con el elegido resaltado. Se guarda en `usuario.modo_tema` (por defecto "sistema") mediante `set_modo_tema`, así lo acompaña en todos sus dispositivos.
+- Los colores de estado (éxito, aviso, error, información) son independientes del color de la marca, para que el semáforo se lea igual con cualquier paleta.
+
+**KPIs con porcentaje.** La función `kpi_panel(fecha)` devuelve, por indicador: `valor` (importe o cantidad), `referencia` (contra qué se mide), `pct` (porcentaje que lo pone en contexto), `variacion_pct` (contra el período anterior; vacío si no hay base) y `tono`. Cada tarjeta muestra el importe, el porcentaje con su barra y la variación (por ejemplo "+12% vs. mes anterior").
+
+| Indicador | Valor | Porcentaje | Se compara con |
+|---|---|---|---|
+| Facturación del mes | facturado del mes (con ND, menos NC) | % de lo que corresponde facturar | mes anterior |
+| Cobranza del mes | cobrado del mes | % de lo cobrable (cobrado + saldo con vencimiento hasta fin de mes) | mes anterior |
+| Cartera vencida | saldo vencido | % del total por cobrar | — |
+| Margen de las OT | neto menos costos que afectan el margen | % del neto de las OT en marcha | — |
+| OT del mes finalizadas | cantidad | % de las OT del mes | mes anterior |
+| Cobranzas por distribuir | pendientes de todo período | % de las cobranzas del mes distribuidas | — |
+| Monotributo en riesgo | asociados en rojo o excedidos | % de los monotributistas | — |
+| Presupuestos aprobados (90 días) | importe aprobado | % del importe decidido | 90 días anteriores |
+| Seguimientos vencidos | cantidad | % de los presupuestos enviados | — |
+| Por pagar vencido | saldo vencido | % del total por pagar | — |
+| A favor de los asociados | saldo a favor | — (se muestra la deuda de asociados) | — |
+
+- **Lo que corresponde facturar** = lo facturado en el mes + lo pendiente de facturar de las OT finalizadas o cerradas y de las OT de servicios mensuales del período.
+- Cada indicador aparece solo si el usuario puede leer los módulos de los que sale.
+- Los **umbrales de los tonos** (por ejemplo, cobranza verde desde 80%, cartera vencida verde hasta 10%) están fijos en la función; quedan para hacerlos configurables más adelante.
+
+**Supuestos tomados que conviene confirmar.**
+1. La **cobranza del mes** se mide por lo aplicado a facturas (con IVA y retenciones), no solo por el efectivo.
+2. El **margen** se calcula sobre las OT en ejecución, finalizadas o cerradas, con los costos aprobados que afectan margen.
+3. Los umbrales de los semáforos (80% y 50% para facturación y cobranza; 10% y 25% para cartera y por pagar vencidos; 30% y 15% para margen) son valores iniciales a validar con el cliente.
+4. El selector de modo arranca en **Sistema**.
+
+**Vista de diseño de referencia:** `frontend/diseno/panel.html` (sidebar en cascada, KPIs, selector de modo y selector de color).

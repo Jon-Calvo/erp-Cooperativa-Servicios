@@ -1,5 +1,8 @@
 # Historial de cambios
 
+## db-0008 · KPIs del panel y apariencia
+Indicadores calculados en la base (`kpi_panel`): cada uno con importe o cantidad, porcentaje que lo pone en contexto, variación contra el período anterior y tono (ok, aviso, malo, neutral): facturación del mes, cobranza del mes, cartera vencida, margen de las OT, OT del mes finalizadas, cobranzas por distribuir, monotributo en riesgo, presupuestos aprobados y seguimientos vencidos, por pagar vencido y cuentas corrientes de asociados. Cada usuario ve solo los de los módulos que puede leer. Apariencia: color de la aplicación configurable por la organización (azul por defecto; verde, violeta, naranja, grafito o un color personalizado) y modo claro, sistema u oscuro por usuario.
+
 ## db-0007 · Monotributo, calendario y reportes
 Control de monotributo: período anual o semestral desde el aniversario de cada asociado, límites versionados, acumulado (facturas emitidas con sus ND y NC, facturas a la Cooperativa, transferencias sin factura, ingresos externos y ajustes, sin contar dos veces un mismo pago), semáforo (sin límite, verde, amarillo, rojo, excedido), proyección al elegir el emisor de una factura y detalle. Calendario unificado con eventos derivados del estado de cada entidad (presupuestos, OT, SM, facturas, cobranzas, costos, matrículas, monotributo) y recordatorios manuales privados o compartidos. Reportes: facturas por cobrar y por pagar con tramos de vencimiento, libro de IVA ventas (por alícuota) y libro de IVA compras.
 
