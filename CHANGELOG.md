@@ -1,5 +1,11 @@
 # Historial de cambios
 
+## frontend-0.1 · Base de la aplicación web
+Next.js 14 conectado a Supabase: inicio de sesión, menú lateral en cascada filtrado por permisos, modo claro / sistema / oscuro por usuario, color de la organización, panel de indicadores con detalle desglosado, configuración de apariencia y de umbrales. Guía de despliegue en Vercel en `frontend/web/README.md`.
+
+## db-0009 · KPIs configurables, detalle desglosado y perfil
+Umbrales de los semáforos editables por la organización (`kpi_umbral`). `kpi_detalle`: cada indicador se desglosa en grupos con importe y porcentaje, y debajo las filas que los componen (por ejemplo, la facturación del mes en facturado, OT finalizadas pendientes de facturar y servicios mensuales pendientes). `mis_permisos()` y `mi_perfil()` para armar el menú y aplicar color y modo.
+
 ## db-0008 · KPIs del panel y apariencia
 Indicadores calculados en la base (`kpi_panel`): cada uno con importe o cantidad, porcentaje que lo pone en contexto, variación contra el período anterior y tono (ok, aviso, malo, neutral): facturación del mes, cobranza del mes, cartera vencida, margen de las OT, OT del mes finalizadas, cobranzas por distribuir, monotributo en riesgo, presupuestos aprobados y seguimientos vencidos, por pagar vencido y cuentas corrientes de asociados. Cada usuario ve solo los de los módulos que puede leer. Apariencia: color de la aplicación configurable por la organización (azul por defecto; verde, violeta, naranja, grafito o un color personalizado) y modo claro, sistema u oscuro por usuario.
 
@@ -25,4 +31,4 @@ Condiciones y medios de pago, categorías de gasto, tipos de cambio (diario y pr
 Registro de migraciones, numeración de códigos (`PREFIJO-AAAA-NNNNN` y `PREFIJO-NNNNN`), listas editables, Organización con historial de condición ante IVA, usuarios, puestos y permisos (Puesto × Módulo × Nivel con excepciones por usuario), auditoría de cambios y utilidades para preparar tablas (RLS, auditoría, fecha de modificación).
 
 ## Próximos
-Frontend ·  Costos y gastos  · Frontend · Bancos y Conciliación · Contabilidad.
+Pantallas por módulo (Maestros, Presupuestos, OT, Gastos, Facturación, Cobranzas, Distribución, Monotributo, Calendario) ·  Costos y gastos  · Frontend · Bancos y Conciliación · Contabilidad.

@@ -801,3 +801,18 @@ Cada fase se prueba antes de entregarse contra un Postgres local con los mismos 
 4. El selector de modo arranca en **Sistema**.
 
 **Vista de diseño de referencia:** `frontend/diseno/panel.html` (sidebar en cascada, KPIs, selector de modo y selector de color).
+
+## 25. Migración 0009 y base del frontend
+
+**Indicadores: detalle y umbrales.**
+- **Detalle desglosado:** al tocar una tarjeta del panel se abre el detalle (`kpi_detalle`): grupos con su importe (o cantidad) y su porcentaje, y debajo, al desplegar cada grupo, las filas que lo componen (hasta 50, las de mayor importe primero). Ejemplo, **Facturación del mes**: *Facturado del mes* (importe y %), *OT finalizadas o cerradas pendientes de facturar* (importe y %) y *Servicios mensuales del período pendientes de facturar* (importe y %), cada uno con sus facturas u OT. Los grupos suman la referencia del indicador y el 100%. Los demás indicadores se desglosan así: cobranza (cobrado, vencidas con saldo, por vencer en el mes), cartera vencida (por tramo), margen (neto, costos y margen, con las OT de menor margen primero), OT del mes (por estado), distribución (distribuidas, pendientes del mes y de meses anteriores), monotributo (por semáforo), presupuestos (aprobado y rechazado; seguimiento vencido y al día), por pagar (por tramo) y cuentas de asociados (a favor y deuda).
+- **Umbrales configurables:** `kpi_umbral` guarda, por indicador, los valores "ok" y "aviso" (en porcentaje o en cantidad) y si un valor alto es bueno o malo. Solo la administración de la organización los cambia (queda auditado) y la base rechaza combinaciones incoherentes. Se editan en Configuración → Indicadores. Los valores iniciales son los de la sección 24.
+- `mis_permisos()` y `mi_perfil()` entregan al frontend el nivel por módulo, los puestos, el modo, el color y la razón social.
+
+**Frontend (Next.js 14 + Supabase, en `frontend/web`).**
+- Todo corre en el navegador con la clave *publishable*; la seguridad real es la de la base (permisos por puesto y RLS). El menú se filtra por `mis_permisos` solo para mostrar lo que corresponde: la base sigue siendo quien decide.
+- Estados de ingreso con mensajes claros: sin sesión, sin perfil (con la instrucción para el primer administrador), usuario inactivo y error de conexión.
+- Color y modo se aplican antes de pintar (sin parpadeo) y se sincronizan con la base.
+- Hoy están construidos: ingreso, menú, panel con detalle, Apariencia e Indicadores. El resto de las pantallas se construye por módulo siguiendo el flujo del negocio; la guía de despliegue en Vercel está en `frontend/web/README.md`.
+
+**Pendiente.** Alta de usuarios, puestos y permisos desde la aplicación (hoy se hace en SQL); pantallas de cada módulo; Bancos y Conciliación; Contabilidad.
