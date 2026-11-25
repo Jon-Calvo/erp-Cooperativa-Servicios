@@ -1,0 +1,25 @@
+import { validar, valorParaGuardar, valoresIniciales, valoresDe, estaVacio } from '../lib/formularios.ts';
+import { mensajeError } from '../lib/errores.ts';
+let f = 0; const ok = (c, m) => { if (!c) f++; console.log(c ? 'OK  ' : 'FAIL', m); };
+const doc = { nombre: 'nro_doc', etiqueta: 'Documento', requerido: true, patron: /^\d{7,11}$/, normalizar: (t) => t.replace(/\D/g, '') };
+const campos = [ doc, { nombre: 'fecha_baja', etiqueta: 'Fecha de baja', tipo: 'fecha', requeridoSi: (v) => v.estado === 'baja', visibleSi: (v) => v.estado === 'baja' }, { nombre: 'estado', etiqueta: 'Estado', tipo: 'select', opciones: [{valor:'activo',etiqueta:'A'}], requerido: true },
+  { nombre: 'activo', etiqueta: 'Activo', tipo: 'check' }, { nombre: 'precio', etiqueta: 'Precio', tipo: 'numero' }, { nombre: 'obs', etiqueta: 'Obs' } ];
+ok(estaVacio('  ') && estaVacio(null) && !estaVacio(0), 'vacío: espacios y nulos sí, el cero no');
+ok(validar(campos, { nro_doc: '30-71111111-2', estado: 'activo' }) === null, 'el CUIT con guiones es válido (se normaliza)');
+ok(validar(campos, { nro_doc: '123', estado: 'activo' }).includes('formato'), 'un documento corto se rechaza');
+ok(validar(campos, { nro_doc: '', estado: 'activo' }) === 'Completá "Documento".', 'campo obligatorio vacío');
+ok(validar(campos, { nro_doc: '30711111112', estado: 'baja', fecha_baja: '' }) === 'Completá "Fecha de baja".', 'obligatorio condicional: la baja pide fecha');
+ok(validar(campos, { nro_doc: '30711111112', estado: 'activo', fecha_baja: '' }) === null, 'si no es baja, la fecha no se pide');
+ok(validar(campos, { nro_doc: '30711111112', estado: 'activo', precio: 'abc' }).includes('número'), 'un precio no numérico se rechaza');
+ok(valorParaGuardar(doc, '30-71111111-2') === '30711111112', 'el documento se guarda solo con dígitos');
+ok(valorParaGuardar(campos[4], '1500.5') === 1500.5 && valorParaGuardar(campos[4], '') === null, 'números: se convierten; vacío es nulo');
+ok(valorParaGuardar(campos[3], undefined) === false && valorParaGuardar(campos[3], true) === true, 'casillas: siempre verdadero o falso');
+ok(valorParaGuardar(campos[5], '   ') === null && valorParaGuardar(campos[5], ' hola ') === 'hola', 'texto: se recorta y el vacío es nulo');
+ok(valoresIniciales(campos, { estado: 'prospecto' }).estado === 'prospecto' && valoresIniciales(campos).activo === false, 'valores iniciales con base');
+ok(valoresDe(campos, { nro_doc: '1', precio: 5 }).precio === 5 && valoresDe(campos, {}).obs === '', 'valores de un registro existente');
+ok(mensajeError({ code: '23505', message: 'duplicate key value violates unique constraint "cliente_tipo_doc_nro_doc_key"' }) === 'Ya existe un registro con ese documento.', 'error de documento duplicado');
+ok(mensajeError({ message: 'new row violates row-level security policy for table "cliente"' }) === 'No tenés permiso para esta operación.', 'error de permisos');
+ok(mensajeError({ message: 'Cambiar "nro_doc" requiere indicar un motivo.' }) === 'Cambiar "nro_doc" requiere indicar un motivo.', 'los mensajes propios del sistema se muestran tal cual');
+ok(mensajeError(new Error('Failed to fetch')).includes('conexión'), 'sin conexión');
+ok(mensajeError({ code: '23514', message: 'new row for relation "cliente" violates check constraint "cliente_nro_doc_check"' }).includes('reglas'), 'violación de regla genérica');
+console.log(f ? 'FALLAS ' + f : 'TODO OK'); process.exit(f ? 1 : 0);

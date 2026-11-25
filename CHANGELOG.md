@@ -1,5 +1,11 @@
 # Historial de cambios
 
+## frontend-0.2 · Usuarios, puestos y maestros
+Pantallas de **Usuarios** (alta, puestos, asociado vinculado, activar o desactivar y excepciones de permisos), **Puestos y permisos** (matriz por módulo) y los maestros **Clientes** (con establecimientos, contactos y cuentas bancarias), **Asociados**, **Proveedores y subcontratistas** y **Servicios** (con precios versionados). Componente genérico de maestros: búsqueda, ver inactivos, alta, edición, motivo obligatorio al cambiar datos críticos, solo lectura según permisos y mensajes de error claros. Pruebas de lógica y de interfaz con un Supabase simulado (`npm run test:logica`, `npm run test:ui`).
+
+## db-0010 · Alta de usuarios, protección del Director y actualización de maestros
+`lista_usuarios`, `alta_usuario` (para quien ya se creó en Authentication) y `set_puestos_usuario`. Siempre queda al menos un Director activo con acceso total: el puesto Director no se renombra, no se desactiva, no se borra y no se le quitan permisos. `actualizar_con_motivo`: modifica un maestro en una sola operación con el motivo que exigen los campos críticos.
+
 ## frontend-0.1 · Base de la aplicación web
 Next.js 14 conectado a Supabase: inicio de sesión, menú lateral en cascada filtrado por permisos, modo claro / sistema / oscuro por usuario, color de la organización, panel de indicadores con detalle desglosado, configuración de apariencia y de umbrales. Guía de despliegue en Vercel en `frontend/web/README.md`.
 
@@ -31,4 +37,4 @@ Condiciones y medios de pago, categorías de gasto, tipos de cambio (diario y pr
 Registro de migraciones, numeración de códigos (`PREFIJO-AAAA-NNNNN` y `PREFIJO-NNNNN`), listas editables, Organización con historial de condición ante IVA, usuarios, puestos y permisos (Puesto × Módulo × Nivel con excepciones por usuario), auditoría de cambios y utilidades para preparar tablas (RLS, auditoría, fecha de modificación).
 
 ## Próximos
-Pantallas por módulo (Maestros, Presupuestos, OT, Gastos, Facturación, Cobranzas, Distribución, Monotributo, Calendario) ·  Costos y gastos  · Frontend · Bancos y Conciliación · Contabilidad.
+Presupuestos y OT · pantallas de catálogos (listas editables, condiciones de pago, medios, categorías de gasto, tipos de cambio, plantillas) · Gastos, Facturación, Cobranzas, Distribución, Monotributo y Calendario ·  Costos y gastos  · Frontend · Bancos y Conciliación · Contabilidad.

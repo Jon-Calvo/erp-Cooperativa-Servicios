@@ -45,7 +45,9 @@ export const MENU: SeccionMenu[] = [
         { etiqueta: 'Servicios', href: '/maestros/servicios' } ] },
       { etiqueta: 'Configuración', icono: 'gear', hijos: [
         { etiqueta: 'Apariencia', href: '/configuracion/apariencia' },
-        { etiqueta: 'Indicadores', href: '/configuracion/indicadores' } ] },
+        { etiqueta: 'Indicadores', href: '/configuracion/indicadores' },
+        { etiqueta: 'Usuarios', href: '/configuracion/usuarios', modulo: 'seguridad' },
+        { etiqueta: 'Puestos y permisos', href: '/configuracion/puestos', modulo: 'seguridad' } ] },
     ],
   },
 ];

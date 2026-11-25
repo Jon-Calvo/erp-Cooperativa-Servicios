@@ -816,3 +816,21 @@ Cada fase se prueba antes de entregarse contra un Postgres local con los mismos 
 - Hoy están construidos: ingreso, menú, panel con detalle, Apariencia e Indicadores. El resto de las pantallas se construye por módulo siguiendo el flujo del negocio; la guía de despliegue en Vercel está en `frontend/web/README.md`.
 
 **Pendiente.** Alta de usuarios, puestos y permisos desde la aplicación (hoy se hace en SQL); pantallas de cada módulo; Bancos y Conciliación; Contabilidad.
+
+## 26. Migración 0010 y pantallas de usuarios y maestros
+
+**Usuarios y permisos.**
+- **Alta:** primero se crea a la persona en Supabase → Authentication → Users (la contraseña la maneja Supabase); después se la da de alta en el sistema desde Configuración → Usuarios (`alta_usuario`) con sus puestos y, si corresponde, su asociado vinculado. Un asociado vinculado ve su propia cuenta corriente y su monotributo.
+- **Permisos:** salen de los puestos (si tiene varios, rige el mayor nivel de cada módulo) y se pueden pisar con excepciones por persona. Los puestos se arman en Configuración → Puestos y permisos, con una matriz módulo por módulo (sin acceso, lectura, operar, administrar).
+- **Protección:** siempre queda al menos un Director activo con acceso total. El puesto Director no se renombra, no se desactiva, no se borra ni se le quitan permisos; nadie puede desactivarse a sí mismo desde la pantalla.
+
+**Maestros.**
+- **Clientes:** razón social, tipo, documento, condición ante IVA, condición de pago y estado (prospecto, activo, inactivo); con establecimientos, contactos y cuentas bancarias. Se puede marcar un establecimiento, un contacto y una cuenta como principal.
+- **Asociados:** datos personales y profesionales, matrícula con vencimiento, estado (la baja pide fecha) y, si es monotributista, categoría, periodicidad del control y aniversario del período; con cuentas bancarias.
+- **Proveedores y subcontratistas:** con su tipo y cuentas bancarias.
+- **Servicios:** categoría, unidad y descripción; **precios versionados**: un precio no se modifica, se agrega uno nuevo con su fecha de vigencia.
+- **Datos críticos** (documento, razón social, CBU): cambiarlos exige indicar un motivo, queda auditado y requiere permiso de administración en Maestros. El documento se guarda solo con números.
+- Los registros no se borran: pasan a inactivo o baja. Los inactivos se ocultan y se muestran con "Ver inactivos".
+- Quien solo tiene lectura ve las fichas sin poder modificarlas.
+
+**Pendiente de esta etapa.** Los catálogos (listas editables como tipo de cliente, rubro, banco y localidad; condiciones y medios de pago; categorías de gasto; tipos de cambio; plantillas de presupuesto) todavía se mantienen con SQL: su pantalla es la próxima. Después, Presupuestos y OT.

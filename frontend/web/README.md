@@ -8,6 +8,8 @@ Aplicación web (Next.js 14, App Router, TypeScript) conectada a Supabase. Toda 
 - Modo claro / sistema / oscuro por usuario (se guarda en la base) y color de la organización (azul por defecto).
 - **Panel** con los indicadores (`kpi_panel`): importe, porcentaje, variación contra el período anterior y detalle desglosado al tocar cada tarjeta (`kpi_detalle`). Navegación por mes.
 - **Configuración → Apariencia** (color de la organización) y **Configuración → Indicadores** (umbrales de los semáforos).
+- **Configuración → Usuarios** y **Puestos y permisos**: alta de usuarios, puestos, asociado vinculado y permisos por módulo.
+- **Maestros**: Clientes (con establecimientos, contactos y cuentas bancarias), Asociados, Proveedores y Servicios (con precios versionados).
 - Las demás pantallas muestran "en construcción": sus datos y reglas ya están en la base.
 
 ## Correr en tu computadora
@@ -31,9 +33,18 @@ npm run dev                       # http://localhost:3000
 3. Ejecutá `select public.inicializar_admin('tu@mail.com');` (solo funciona una vez y te deja como Director).
 4. Entrá a la aplicación.
 
+## Pruebas
+```bash
+npm run test:logica   # validaciones, normalización de datos y mensajes de error
+npm run test:ui       # el componente de maestros, con un Supabase simulado
+npm run typecheck
+```
+
 ## Estructura
 ```
 app/                  páginas (login, panel, configuración) y estilos globales
-components/           menú, barra superior, tarjetas de indicadores, detalle, autenticación
+components/           menú, barra superior, indicadores, autenticación
+components/crud/      componente genérico de maestros (lista, ficha, formulario, validaciones)
+components/maestros/  secundarios (establecimientos, contactos, cuentas, precios)
 lib/                  cliente de Supabase, tipos, formato (es-AR), tema, definición del menú
 ```

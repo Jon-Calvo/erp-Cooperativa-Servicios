@@ -1,7 +1,7 @@
 -- SOLO PARA PRUEBAS LOCALES. No se aplica en Supabase (allí ya existe todo esto).
 -- Imita lo mínimo de Supabase: esquema auth, auth.uid(), roles y permisos por defecto.
 create schema if not exists auth;
-create table if not exists auth.users (id uuid primary key default gen_random_uuid(), email text);
+create table if not exists auth.users (id uuid primary key default gen_random_uuid(), email text, last_sign_in_at timestamptz);
 create or replace function auth.uid() returns uuid language sql stable as
 $$ select nullif(current_setting('request.jwt.claim.sub', true), '')::uuid $$;
 do $$ begin
